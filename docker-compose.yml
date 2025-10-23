@@ -1,0 +1,58 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: p3_mongo
+    volumes:
+      - mongo_data:/data/db
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+    container_name: p3_backend
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/bank_app
+      - SECRET_KEY=supersecret
+    depends_on:
+      - mongo
+    expose:
+      - "5000"
+    restart: unless-stopped
+
+  transactions:
+    build:
+      context: ./transactions
+    container_name: p3_transactions
+    environment:
+      - BANK_DB_URI=mongodb://mongo:27017/bank_app
+    depends_on:
+      - mongo
+    expose:
+      - "4000"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./studentportfolio
+    container_name: p3_frontend
+    expose:
+      - "80"
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: p3_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend
+      - transactions
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
