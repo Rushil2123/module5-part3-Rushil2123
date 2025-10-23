@@ -47,7 +47,7 @@
     const list = document.getElementById('transactionsList');
     list.innerHTML = '';  // clear prior
     try {
-      const res = await fetch('/api/transactions');
+      const res = await fetch(`/api/transactions/{{ session['user_id'] }}`);
       if (!res.ok) throw new Error(await res.text());
       const data = await res.json();
   
